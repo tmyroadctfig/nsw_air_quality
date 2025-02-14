@@ -3,14 +3,30 @@
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import UnitOfConcentration
 from homeassistant.core import HomeAssistant
+from .const import CONF_SITE_ID, CONF_NEPH_CREATE, CONF_PM10_CREATE
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the sensor platform."""
-    site_id = entry.data["site_id"]
+    site_id = entry.data[CONF_SITE_ID]
     site_name = entry.title
-    options = {k: entry.data[k] for k in ["option_1", "option_2", "option_3"]}
 
-    async_add_entities([PM10Sensor(site_id, site_name)])
+    create_neph = entry.options.get(
+        CONF_NEPH_CREATE, entry.data.get(CONF_NEPH_CREATE)
+    )
+
+    create_pm10 = entry.options.get(
+        CONF_PM10_CREATE, entry.data.get(CONF_PM10_CREATE)
+    )
+
+    sensors = []
+
+    if create_neph is True:
+        sensors.append(PM10Sensor(site_id + "_neph", site_name))
+
+    if create_pm10 is True:
+        sensors.append(PM10Sensor(site_id, site_name))
+
+    async_add_entities(sensors, True)
 
 class PM10Sensor(SensorEntity):
     """Representation of a PM10 sensor."""

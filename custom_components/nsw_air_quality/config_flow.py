@@ -2,7 +2,7 @@
 import aiohttp
 from homeassistant import config_entries
 from homeassistant.core import callback
-from .const import DOMAIN, CONF_SITE_IDS
+from .const import DOMAIN, CONF_SITE_ID, CONF_NEPH_CREATE, CONF_PM10_CREATE
 
 SITE_DETAILS_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_SiteDetails"
 
@@ -30,20 +30,12 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_show_form(step_id="user", errors=errors)
 
         if user_input is not None:
-            return self.async_create_entry(title="PM10 Sensors", data=user_input)
+            return self.async_create_entry(title="NSW Air Quality", data=user_input)
 
         schema = vol.Schema({
-            vol.Required(CONF_SITE_IDS, default=[]): vol.All(
-                vol.Length(min=1),
-                [vol.In(available_sites.keys())]
-            )
-        })
-
-        schema = vol.Schema({
-            vol.Required("site_id"): vol.In(available_sites),
-            vol.Optional("option_1", default=False): bool,
-            vol.Optional("option_2", default=False): bool,
-            vol.Optional("option_3", default=False): bool,
+            vol.Required(CONF_SITE_ID): vol.In(available_sites),
+            vol.Optional(CONF_NEPH_CREATE, default=True): bool,
+            vol.Optional(CONF_PM10_CREATE, default=True): bool,
         })
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
