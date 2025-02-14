@@ -1,6 +1,7 @@
 ﻿import voluptuous as vol
 import aiohttp
 from homeassistant import config_entries
+from homeassistant.core import callback
 from .const import DOMAIN, CONF_SITE_IDS
 
 SITE_DETAILS_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_SiteDetails"
@@ -15,6 +16,7 @@ async def fetch_available_sites():
             return {}
 
 class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    VERSION = 1
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
@@ -37,4 +39,15 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
         })
 
+        schema = vol.Schema({
+            vol.Required("site_id"): vol.In(available_sites),
+            vol.Optional("option_1", default=False): bool,
+            vol.Optional("option_2", default=False): bool,
+            vol.Optional("option_3", default=False): bool,
+        })
+
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
+
+    @callback
+    def async_get_options_flow(self):
+        return NswAirQualityConfigFlow(self.config_entry)

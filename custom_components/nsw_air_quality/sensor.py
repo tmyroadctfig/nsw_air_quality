@@ -6,16 +6,18 @@ from homeassistant.core import HomeAssistant
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the sensor platform."""
-    site_ids = entry.data.get("site_ids", [])
-    sensors = [PM10Sensor(site_id) for site_id in site_ids]
-    async_add_entities(sensors, update_before_add=True)
+    site_id = entry.data["site_id"]
+    site_name = entry.title
+    options = {k: entry.data[k] for k in ["option_1", "option_2", "option_3"]}
+
+    async_add_entities([PM10Sensor(site_id, site_name)])
 
 class PM10Sensor(SensorEntity):
     """Representation of a PM10 sensor."""
 
-    def __init__(self, site_id: str, initial_value: float = None):
+    def __init__(self, site_id: str, site_name: str, initial_value: float = None):
         """Initialize the sensor."""
-        #self._attr_name = name
+        self._attr_name = site_name
         self._attr_unique_id = f"pm10_{site_id}"
         self._attr_native_unit_of_measurement = UnitOfConcentration.MICROGRAMS_PER_CUBIC_METER
         self._attr_device_class = "pm10"
