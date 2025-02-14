@@ -1,37 +1,28 @@
-﻿from __future__ import annotations
+﻿"""Sensor platform for NSW Air Quality Data """
 
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntity,
-    SensorStateClass,
-)
-
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.const import UnitOfConcentration
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
-
-def setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None
-) -> None:
+async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the sensor platform."""
-    add_entities([Pm10Sensor()])
+    site_ids = entry.data.get("site_ids", [])
+    sensors = [PM10Sensor(site_id) for site_id in site_ids]
+    async_add_entities(sensors, update_before_add=True)
 
+class PM10Sensor(SensorEntity):
+    """Representation of a PM10 sensor."""
 
-class Pm10Sensor(SensorEntity):
-    """Representation of a Sensor."""
+    def __init__(self, site_id: str, initial_value: float = None):
+        """Initialize the sensor."""
+        #self._attr_name = name
+        self._attr_unique_id = f"pm10_{site_id}"
+        self._attr_native_unit_of_measurement = UnitOfConcentration.MICROGRAMS_PER_CUBIC_METER
+        self._attr_device_class = "pm10"
+        self._attr_state_class = "measurement"
+        self._attr_native_value = initial_value
 
-    _attr_name = "PM10"
-    _attr_native_unit_of_measurement = "ug/m^3"
-    #_attr_device_class = SensorDeviceClass.TEMPERATURE
-    _attr_state_class = SensorStateClass.MEASUREMENT
-
-    def update(self) -> None:
-        """Fetch new state data for the sensor.
-
-        This is the only method that should fetch new data for Home Assistant.
-        """
-        self._attr_native_value = 23
+    def update(self):
+        """Fetch new state data (dummy implementation)."""
+        # In a real implementation, fetch data from an API or hardware sensor
+        self._attr_native_value = 12.5  # Example PM10 value
