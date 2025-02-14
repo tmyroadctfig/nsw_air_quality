@@ -33,7 +33,7 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema({
             vol.Required(CONF_SITE_IDS, default=[]): vol.All(
                 vol.Length(min=1),
-                vol.In(available_sites.keys())
+                [vol.In(available_sites.keys())]
             )
         })
 
