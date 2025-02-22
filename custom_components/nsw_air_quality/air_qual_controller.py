@@ -1,32 +1,71 @@
-﻿import aiohttp
+﻿from datetime import timedelta
+import aiohttp
+from datetime import datetime
+from homeassistant.util import Throttle
+
+import logging
+
+from custom_components.nsw_air_quality.const import HEADERS
+from custom_components.nsw_air_quality.sensor_type import SensorType
+
+_LOGGER = logging.getLogger(__name__)
+
+MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=300)
 
 SITE_DATA_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_Observations"
+SITE_DETAILS_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_SiteDetails"
+
+async def fetch_available_sites():
+    """Fetch site list from the API."""
+    async with aiohttp.ClientSession(headers=HEADERS) as session:
+        _LOGGER.debug("Fetching site list")
+        async with session.get(SITE_DETAILS_ENDPOINT) as response:
+            if response.status == 200:
+                data = await response.json()
+                return { site["Site_Id"]: site["SiteName"] for site in data }
+            else:
+                _LOGGER.error("Error fetching site list: %s", response.status)
+                return {}
 
 class AirQualityController:
-    def __init__(self, site_ids: []):
+    def __init__(self):
         """Initialize the sensor."""
-        self.site_ids = site_ids
-        self.site_data = None
+        self._site_ids = []
+        self._site_data = None
 
+    def add_site(self, site_id):
+        self._site_ids.append(site_id)
+
+    @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def async_update(self):
         """Fetch new data and send a POST request."""
 
         payload = {
             "Parameters": [ "NEPH", "PM10" ],
-            "Sites": self.site_ids,
-            "StartDate": (now() - timedelta( hours = 1 )).strftime("%Y-%m-%dT%H:00:00"),
-            "EndDate": now().strftime("%Y-%m-%dT%H:00:00"),
+            "Sites": self._site_ids,
+            "StartDate": (datetime.now() - timedelta( hours = 1 )).strftime("%Y-%m-%dT%H:00:00"),
+            "EndDate": datetime.now().strftime("%Y-%m-%dT%H:00:00"),
             "Categories": [ "Averages", "Site AQC" ],
             "Frequency": [ "Hourly average"]
         }
 
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers = HEADERS) as session:
+            _LOGGER.debug("Fetching site readings for site IDs: %s", self._site_ids)
             try:
                 async with session.post(SITE_DATA_ENDPOINT, json=payload) as response:
                     if response.status == 200:
                         data = await response.json()
-                        self.site_data = data.get("status", "unknown")  # Update sensor state
+                        self._site_data = data  # Update sensor state
                     else:
-                        self.site_data = f"Error {response.status}"
+                        _LOGGER.error("Error fetching site list: %s", response.status)
+                        self._site_data = f"Error {response.status}"
             except aiohttp.ClientError as e:
-                self.site_data = f"Request failed: {str(e)}"
+                self._site_data = f"Request failed: {str(e)}"
+
+    def site_reading(self, site_id, sensor_type: SensorType):
+        if not self._site_data:
+            return []
+
+        site_data = [entry for entry in self._site_data if entry.get("Site_Id") == site_id]
+        sensor_data = [entry for entry in site_data if entry.get("Parameter").get("ParameterCode") == sensor_type.name]
+        return sensor_data

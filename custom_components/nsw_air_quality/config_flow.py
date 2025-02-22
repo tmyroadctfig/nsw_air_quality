@@ -1,19 +1,10 @@
 ﻿import voluptuous as vol
-import aiohttp
 from homeassistant import config_entries
 from homeassistant.core import callback
-from .const import DOMAIN, CONF_SITE_ID, CONF_NEPH_CREATE, CONF_PM10_CREATE
 
-SITE_DETAILS_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_SiteDetails"
+from .air_qual_controller import fetch_available_sites
+from .const import DOMAIN, CONF_SITE_ID, CONF_NEPH_CREATE, CONF_PM10_CREATE, CONF_SITE_NAME
 
-async def fetch_available_sites():
-    """Fetch site list from the API."""
-    async with aiohttp.ClientSession() as session:
-        async with session.get(SITE_DETAILS_ENDPOINT) as response:
-            if response.status == 200:
-                data = await response.json()
-                return {site["Site_Id"]: site["SiteName"] for site in data}
-            return {}
 
 class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
@@ -30,7 +21,13 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_show_form(step_id="user", errors=errors)
 
         if user_input is not None:
-            return self.async_create_entry(title="NSW Air Quality", data=user_input)
+            existing_entry = self._async_entry_for_site_id(user_input[CONF_SITE_ID])
+            if existing_entry:
+                return self.async_abort("Already configured")
+
+            user_input[CONF_SITE_NAME] = available_sites[CONF_SITE_ID]
+
+            return self.async_create_entry(title=user_input[CONF_SITE_NAME], data=user_input)
 
         schema = vol.Schema({
             vol.Required(CONF_SITE_ID): vol.In(available_sites),
@@ -39,6 +36,13 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         })
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
+
+    @callback
+    def _async_entry_for_site_id(self, site_id):
+        for entry in self._async_current_entries():
+            if entry.data.get(CONF_SITE_ID) == site_id:
+                return entry
+        return None
 
     @callback
     def async_get_options_flow(self):
