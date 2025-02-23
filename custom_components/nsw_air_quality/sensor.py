@@ -2,7 +2,7 @@
 
 from homeassistant import exceptions
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.const import UnitOfConcentration
+from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 
@@ -46,6 +46,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class AirQualitySensor(SensorEntity):
     def __init__(self, site_id: str, site_name: str, controller: AirQualityController, sensor_type: SensorType, initial_value: float = None):
         """Initialize the sensor."""
+        _LOGGER.debug("Initializing site %s sensor %s", site_name, sensor_type)
+
         self._attr_name = site_name
         self._attr_unique_id = f"{sensor_type.name}_{site_id}"
         self._attr_state_class = "measurement"
@@ -61,7 +63,7 @@ class AirQualitySensor(SensorEntity):
                 self._attr_device_class = "neph"
 
             case SensorType.PM10:
-                self._attr_native_unit_of_measurement = UnitOfConcentration.MICROGRAMS_PER_CUBIC_METER
+                self._attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
                 self._attr_device_class = "pm10"
 
             case _:
