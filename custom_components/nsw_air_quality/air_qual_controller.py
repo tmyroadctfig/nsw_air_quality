@@ -64,7 +64,7 @@ class AirQualityController:
 
     def site_reading(self, site_id, sensor_type: SensorType):
         if not self._site_data:
-            return []
+            return None
 
         site_data = [entry for entry in self._site_data if entry.get("Site_Id") == site_id]
         sensor_data = [entry for entry in site_data if entry.get("Parameter").get("ParameterCode") == sensor_type.name]

@@ -1,4 +1,6 @@
-﻿from custom_components.nsw_air_quality.air_qual_controller import AirQualityController, fetch_available_sites
+﻿from datetime import datetime
+
+from custom_components.nsw_air_quality.air_qual_controller import AirQualityController, fetch_available_sites
 
 import pytest
 
@@ -23,8 +25,16 @@ async def test_fetch_data() -> None:
 
     await controller.async_update()
 
-    neph = controller.site_reading(site_id, SensorType.NEPH)[0]
-    pm10 = controller.site_reading(site_id, SensorType.PM10)[0]
+    current_hour = datetime.now().hour
+    neph = controller.site_reading(site_id, SensorType.NEPH)
+    pm10 = controller.site_reading(site_id, SensorType.PM10)
 
-    assert neph.get("Site_Id") == site_id
-    assert pm10.get("Site_Id") == site_id
+    current_neph = next((item for item in neph if item["Hour"] == current_hour), None)
+    current_pm10 = next((item for item in pm10 if item["Hour"] == current_hour), None)
+
+    assert len(neph) == 24
+    assert len(pm10) == 24
+
+    assert current_neph.get("Site_Id") == site_id
+    assert current_pm10.get("Site_Id") == site_id
+

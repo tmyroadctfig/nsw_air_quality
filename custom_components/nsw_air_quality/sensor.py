@@ -83,8 +83,10 @@ class AirQualitySensor(SensorEntity):
     def update(self):
         self.controller.async_update()
 
-        current_hour = datetime.now().hour
         sensor_data = self.controller.site_reading(self._site_id, self._sensor_type)
-        entry = next((item for item in sensor_data if item["Hour"] == current_hour), None)
+        if sensor_data is None:
+            self._attr_native_value = None
 
+        current_hour = datetime.now().hour
+        entry = next((item for item in sensor_data if item["Hour"] == current_hour), None)
         self._attr_native_value = entry.get("Value")
