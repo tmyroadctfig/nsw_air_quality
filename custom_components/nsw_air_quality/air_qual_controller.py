@@ -50,7 +50,7 @@ class AirQualityController:
         }
 
         async with aiohttp.ClientSession(headers = HEADERS) as session:
-            _LOGGER.debug("Fetching site readings for site IDs: %s", self._site_ids)
+            _LOGGER.info("Fetching site readings for site IDs: %s", self._site_ids)
             try:
                 async with session.post(SITE_DATA_ENDPOINT, json=payload) as response:
                     if response.status == 200:

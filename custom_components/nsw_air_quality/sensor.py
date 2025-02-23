@@ -50,8 +50,9 @@ class AirQualitySensor(SensorEntity):
         """Initialize the sensor."""
         _LOGGER.info("Initializing site '%s' (site-id:%s) sensor type: '%s'", site_name, site_id, sensor_type)
 
+        self._attr_has_entity_name = True
         self._attr_name = f"{site_name} {sensor_type.name}"
-        self._attr_unique_id = f"{sensor_type.name}_{site_id}"
+        self._attr_unique_id = f"{site_name.lower()}_{sensor_type.name.lower()}"
         self._attr_state_class = "measurement"
         self._attr_native_value = initial_value
         self.controller = controller
