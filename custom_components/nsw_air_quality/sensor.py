@@ -48,9 +48,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class AirQualitySensor(SensorEntity):
     def __init__(self, site_id: str, site_name: str, controller: AirQualityController, sensor_type: SensorType, initial_value: float = None):
         """Initialize the sensor."""
-        _LOGGER.debug("Initializing site %s sensor %s", site_name, sensor_type)
+        _LOGGER.info("Initializing site '%s' (site-id:%s) sensor type: '%s'", site_name, site_id, sensor_type)
 
-        self._attr_name = site_name
+        self._attr_name = f"{site_name} {sensor_type.name}"
         self._attr_unique_id = f"{sensor_type.name}_{site_id}"
         self._attr_state_class = "measurement"
         self._attr_native_value = initial_value
@@ -77,7 +77,7 @@ class AirQualitySensor(SensorEntity):
             identifiers={(DOMAIN, f"{self._site_id}")},
             manufacturer=SHORT_ATTRIBUTION,
             model=MODEL_NAME,
-            name=self._site_id,
+            name=f"{site_name} (site:{self._site_id})",
         )
 
     async def async_update(self):
