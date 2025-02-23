@@ -2,9 +2,12 @@
 from homeassistant import config_entries
 from homeassistant.core import callback
 
+import logging
+
 from .air_qual_controller import fetch_available_sites
 from .const import DOMAIN, CONF_SITE_ID, CONF_NEPH_CREATE, CONF_PM10_CREATE, CONF_SITE_NAME
 
+_LOGGER = logging.getLogger(__name__)
 
 class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
@@ -21,11 +24,14 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_show_form(step_id="user", errors=errors)
 
         if user_input is not None:
-            existing_entry = self._async_entry_for_site_id(user_input[CONF_SITE_ID])
+            site_id = user_input[CONF_SITE_ID]
+            existing_entry = self._async_entry_for_site_id(site_id)
             if existing_entry:
+                _LOGGER.error("Site already configured %s", existing_entry)
                 return self.async_abort("Already configured")
 
-            user_input[CONF_SITE_NAME] = available_sites[CONF_SITE_ID]
+            _LOGGER.info("Setting up site %s", existing_entry)
+            user_input[CONF_SITE_NAME] = available_sites.get(site_id)
 
             return self.async_create_entry(title=user_input[CONF_SITE_NAME], data=user_input)
 

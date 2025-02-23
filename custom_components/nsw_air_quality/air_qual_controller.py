@@ -22,7 +22,7 @@ async def fetch_available_sites():
         async with session.get(SITE_DETAILS_ENDPOINT) as response:
             if response.status == 200:
                 data = await response.json()
-                return { site["Site_Id"]: site["SiteName"] for site in data }
+                return { site["Site_Id"]: site["SiteName"].title() for site in data }
             else:
                 _LOGGER.error("Error fetching site list: %s", response.status)
                 return {}

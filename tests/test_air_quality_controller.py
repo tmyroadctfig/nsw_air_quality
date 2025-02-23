@@ -1,9 +1,17 @@
-﻿from custom_components.nsw_air_quality.air_qual_controller import AirQualityController
+﻿from custom_components.nsw_air_quality.air_qual_controller import AirQualityController, fetch_available_sites
 
 import pytest
 
 from custom_components.nsw_air_quality.sensor_type import SensorType
 
+@pytest.mark.asyncio
+async def test_fetch_sites() -> None:
+    """Tests fetching site info."""
+
+    sites = await fetch_available_sites()
+
+    assert len(sites) > 0
+    assert sites.get(500) == "Wollongong"
 
 @pytest.mark.asyncio
 async def test_fetch_data() -> None:
