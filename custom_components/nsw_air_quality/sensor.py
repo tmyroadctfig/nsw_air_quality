@@ -46,8 +46,8 @@ class AirQualitySensor(SensorEntity):
         _LOGGER.info("Initializing site '%s' (site-id:%s) sensor type: '%s'", site_name, site_id, sensor_type)
 
         self._attr_has_entity_name = True
-        self._attr_name = f"{site_name} {sensor_type.name}"
-        self._attr_unique_id = f"{site_name.lower()}_{sensor_type.name.lower()}"
+        self._attr_name = f"{sensor_type.name}"
+        self._attr_unique_id = f"{sensor_type.name.lower()}"
         self._attr_state_class = "measurement"
         self._attr_native_value = initial_value
         self.controller = controller
@@ -58,7 +58,6 @@ class AirQualitySensor(SensorEntity):
         match sensor_type:
             case SensorType.NEPH:
                 self._attr_native_unit_of_measurement = "10^-4 m^-1"
-                self._attr_device_class = SensorDeviceClass.AQI
 
             case SensorType.PM10:
                 self._attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
@@ -74,7 +73,6 @@ class AirQualitySensor(SensorEntity):
 
             case SensorType.NH3:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
-                self._attr_device_class = SensorDeviceClass.GAS
 
             case SensorType.NO:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION

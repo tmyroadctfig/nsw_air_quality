@@ -32,16 +32,17 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.error("Site already configured %s", existing_entry)
                 return self.async_abort("Already configured")
 
-            _LOGGER.info("Setting up site %s", existing_entry)
-            user_input[CONF_SITE_NAME] = available_sites.get(site_id)
+            site_name = available_sites.get(site_id)
+            _LOGGER.info("Setting up site %s: %s", site_id, site_name)
+            user_input[CONF_SITE_NAME] = site_name
 
-            return self.async_create_entry(title=user_input[CONF_SITE_NAME], data=user_input)
+            return self.async_create_entry(title=site_name, data=user_input)
 
         sensor_options = {vol.Optional(sensor.name.upper(), default=True): bool for sensor in SensorType}
 
         schema = vol.Schema({
             vol.Required(CONF_SITE_ID): vol.In(available_sites),
-            **sensor_options,  # Unpacking the dynamically generated dictionary
+            **sensor_options, # Unpacking the dynamically generated dictionary
         })
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)

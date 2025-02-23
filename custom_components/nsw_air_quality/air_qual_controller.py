@@ -34,7 +34,8 @@ class AirQualityController:
         self._site_data = None
 
     def add_site(self, site_id):
-        self._site_ids.append(site_id)
+        if not site_id in self._site_ids:
+            self._site_ids.append(site_id)
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def async_update(self):
