@@ -1,6 +1,6 @@
 ﻿"""Sensor platform for NSW Air Quality Data """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from homeassistant import exceptions
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
@@ -110,6 +110,6 @@ class AirQualitySensor(SensorEntity):
             self._attr_native_value = None
             return
 
-        current_hour = datetime.now().hour
-        entry = next((item for item in sensor_data if item["Hour"] == current_hour), None)
+        previous_hour = (datetime.now() - timedelta(hours = 1)).hour
+        entry = next((item for item in sensor_data if item["Hour"] == previous_hour), None)
         self._attr_native_value = entry.get("Value")
