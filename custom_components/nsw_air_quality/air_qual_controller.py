@@ -41,7 +41,7 @@ class AirQualityController:
         """Fetch new data and send a POST request."""
 
         payload = {
-            "Parameters": [ "NEPH", "PM10" ],
+            "Parameters": [ "NEPH", "PM10", "PM2.5", "CO", "NH3", "NO", "NO2", "OZONE", "SO2" ],
             "Sites": self._site_ids,
             "StartDate": (datetime.now() - timedelta( days = 1 )).strftime("%Y-%m-%d"),
             "EndDate": datetime.now().strftime("%Y-%m-%d"),
@@ -66,6 +66,10 @@ class AirQualityController:
         if not self._site_data:
             return None
 
+        parameter_code = sensor_type.name
+        if sensor_type == SensorType.PM25:
+            parameter_code = "PM2.5"
+
         site_data = [entry for entry in self._site_data if entry.get("Site_Id") == site_id]
-        sensor_data = [entry for entry in site_data if entry.get("Parameter").get("ParameterCode") == sensor_type.name]
+        sensor_data = [entry for entry in site_data if entry.get("Parameter").get("ParameterCode") == parameter_code]
         return sensor_data

@@ -5,9 +5,11 @@ from homeassistant.core import callback
 import logging
 
 from .air_qual_controller import fetch_available_sites
-from .const import DOMAIN, CONF_SITE_ID, CONF_NEPH_CREATE, CONF_PM10_CREATE, CONF_SITE_NAME
+from .const import DOMAIN, CONF_SITE_ID, CONF_SITE_NAME
+from .sensor_type import SensorType
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
@@ -35,10 +37,11 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             return self.async_create_entry(title=user_input[CONF_SITE_NAME], data=user_input)
 
+        sensor_options = {vol.Optional(sensor.name.upper(), default=True): bool for sensor in SensorType}
+
         schema = vol.Schema({
             vol.Required(CONF_SITE_ID): vol.In(available_sites),
-            vol.Optional(CONF_NEPH_CREATE, default=True): bool,
-            vol.Optional(CONF_PM10_CREATE, default=True): bool,
+            **sensor_options,  # Unpacking the dynamically generated dictionary
         })
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)

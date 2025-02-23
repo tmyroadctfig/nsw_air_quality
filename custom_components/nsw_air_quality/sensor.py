@@ -3,15 +3,15 @@
 from datetime import datetime
 
 from homeassistant import exceptions
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, CONCENTRATION_PARTS_PER_MILLION
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 
 import logging
 
 from .air_qual_controller import AirQualityController
-from .const import DOMAIN, SHORT_ATTRIBUTION, MODEL_NAME, CONF_SITE_ID, CONF_NEPH_CREATE, CONF_PM10_CREATE, CONF_CONTROLLER
+from .const import DOMAIN, SHORT_ATTRIBUTION, MODEL_NAME, CONF_SITE_ID, CONF_CONTROLLER, CONCENTRATION_PARTS_PER_HUNDRED_MILLION
 from .sensor_type import SensorType
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,21 +27,16 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     controller.add_site(site_id)
 
-    create_neph = entry.options.get(
-        CONF_NEPH_CREATE, entry.data.get(CONF_NEPH_CREATE)
-    )
-
-    create_pm10 = entry.options.get(
-        CONF_PM10_CREATE, entry.data.get(CONF_PM10_CREATE)
-    )
-
     sensors = []
 
-    if create_neph is True:
-        sensors.append(AirQualitySensor(site_id, site_name, controller, SensorType.NEPH))
+    for sensor in SensorType:
+        # Convert Enum name to uppercase for matching config keys
+        config_key = sensor.name.upper()
 
-    if create_pm10 is True:
-        sensors.append(AirQualitySensor(site_id, site_name, controller, SensorType.PM10))
+        create_sensor = entry.options.get(config_key, entry.data.get(config_key))
+
+        if create_sensor is True:
+            sensors.append(AirQualitySensor(site_id, site_name, controller, sensor))
 
     async_add_entities(sensors, True)
 
@@ -63,11 +58,39 @@ class AirQualitySensor(SensorEntity):
         match sensor_type:
             case SensorType.NEPH:
                 self._attr_native_unit_of_measurement = "10^-4 m^-1"
-                self._attr_device_class = "neph"
+                self._attr_device_class = SensorDeviceClass.AQI
 
             case SensorType.PM10:
                 self._attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
-                self._attr_device_class = "pm10"
+                self._attr_device_class = SensorDeviceClass.PM10
+
+            case SensorType.PM25:
+                self._attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+                self._attr_device_class = SensorDeviceClass.PM25
+
+            case SensorType.CO:
+                self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+                self._attr_device_class = SensorDeviceClass.CO
+
+            case SensorType.NH3:
+                self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+                self._attr_device_class = SensorDeviceClass.GAS
+
+            case SensorType.NO:
+                self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
+                self._attr_device_class = SensorDeviceClass.NITROGEN_MONOXIDE
+
+            case SensorType.NO2:
+                self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
+                self._attr_device_class = SensorDeviceClass.NITROGEN_DIOXIDE
+
+            case SensorType.OZONE:
+                self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
+                self._attr_device_class = SensorDeviceClass.OZONE
+
+            case SensorType.SO2:
+                self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
+                self._attr_device_class = SensorDeviceClass.SULPHUR_DIOXIDE
 
             case _:
                 _LOGGER.error("Unknown sensor type: %s", sensor_type)
