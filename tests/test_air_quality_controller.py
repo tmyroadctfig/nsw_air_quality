@@ -23,8 +23,8 @@ async def test_fetch_data() -> None:
 
     await controller.async_update()
 
-    neph = controller.site_reading(site_id, SensorType.NEPH)
-    pm10 = controller.site_reading(site_id, SensorType.PM10)
+    neph = controller.site_reading(site_id, SensorType.NEPH)[0]
+    pm10 = controller.site_reading(site_id, SensorType.PM10)[0]
 
     assert neph.get("Site_Id") == site_id
     assert pm10.get("Site_Id") == site_id

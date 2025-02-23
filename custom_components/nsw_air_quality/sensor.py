@@ -1,5 +1,7 @@
 ﻿"""Sensor platform for NSW Air Quality Data """
 
+from datetime import datetime
+
 from homeassistant import exceptions
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
@@ -81,4 +83,8 @@ class AirQualitySensor(SensorEntity):
     def update(self):
         self.controller.async_update()
 
-        self._attr_native_value = self.controller.site_reading(self._site_id, self._sensor_type).get("Value")
+        current_hour = datetime.now().hour
+        sensor_data = self.controller.site_reading(self._site_id, self._sensor_type)
+        entry = next((item for item in sensor_data if item["Hour"] == current_hour), None)
+
+        self._attr_native_value = entry.get("Value")

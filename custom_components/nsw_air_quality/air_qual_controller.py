@@ -43,8 +43,8 @@ class AirQualityController:
         payload = {
             "Parameters": [ "NEPH", "PM10" ],
             "Sites": self._site_ids,
-            "StartDate": (datetime.now() - timedelta( hours = 1 )).strftime("%Y-%m-%dT%H:00:00"),
-            "EndDate": datetime.now().strftime("%Y-%m-%dT%H:00:00"),
+            "StartDate": (datetime.now() - timedelta( days = 1 )).strftime("%Y-%m-%d"),
+            "EndDate": datetime.now().strftime("%Y-%m-%d"),
             "Categories": [ "Averages", "Site AQC" ],
             "Frequency": [ "Hourly average"]
         }
