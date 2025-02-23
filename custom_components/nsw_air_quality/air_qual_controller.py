@@ -1,4 +1,6 @@
 ﻿from datetime import timedelta
+from urllib.parse import quote
+
 import aiohttp
 from datetime import datetime
 from homeassistant.util import Throttle
@@ -14,6 +16,7 @@ MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=300)
 
 SITE_DATA_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_Observations"
 SITE_DETAILS_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_SiteDetails"
+SITE_DATA_ENDPOINT2 = "https://www.airquality.nsw.gov.au/_design/air-quality-api/getsitedetails2/getconcentrationdata-station"
 
 async def fetch_available_sites():
     """Fetch site list from the API."""
@@ -41,19 +44,16 @@ class AirQualityController:
     async def async_update(self):
         """Fetch new data and send a POST request."""
 
-        payload = {
-            "Parameters": [ "NEPH", "PM10", "PM2.5", "CO", "NH3", "NO", "NO2", "OZONE", "SO2" ],
-            "Sites": self._site_ids,
-            "StartDate": (datetime.now() - timedelta( days = 1 )).strftime("%Y-%m-%d"),
-            "EndDate": datetime.now().strftime("%Y-%m-%d"),
-            "Categories": [ "Averages", "Site AQC" ],
-            "Frequency": [ "Hourly average"]
-        }
+        now = datetime.now()
+        start_date=(now - timedelta(days=1)).strftime("%Y-%m-%dT%H:00:00")
+        end_date=now.strftime("%Y-%m-%dT%H:00:00")
+        sites_list = quote(",".join(map(str, self._site_ids)))
+        url = f"{SITE_DATA_ENDPOINT2}?site_ids={sites_list}&start_datetime={start_date}&end_datetime={end_date}"
 
         async with aiohttp.ClientSession(headers = HEADERS) as session:
             _LOGGER.info("Fetching site readings for site IDs: %s", self._site_ids)
             try:
-                async with session.post(SITE_DATA_ENDPOINT, json=payload) as response:
+                async with session.get(url) as response:
                     if response.status == 200:
                         data = await response.json()
                         self._site_data = data  # Update sensor state
