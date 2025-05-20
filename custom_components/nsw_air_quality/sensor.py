@@ -99,7 +99,7 @@ class AirQualitySensor(SensorEntity):
             identifiers={(DOMAIN, f"{self._site_id}")},
             manufacturer=SHORT_ATTRIBUTION,
             model=MODEL_NAME,
-            name=f"{site_name} (site:{self._site_id})",
+            name=f"{site_name}",
         )
 
     async def async_update(self):
