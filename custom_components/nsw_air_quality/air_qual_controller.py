@@ -1,14 +1,12 @@
-﻿from datetime import timedelta
+import logging
+from datetime import datetime, timedelta
 from urllib.parse import quote
 
 import aiohttp
-from datetime import datetime
 from homeassistant.util import Throttle
 
-import logging
-
-from custom_components.nsw_air_quality.const import HEADERS
-from custom_components.nsw_air_quality.sensor_type import SensorType
+from .const import HEADERS
+from .sensor_type import SensorType
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -1,8 +1,8 @@
-﻿import voluptuous as vol
+import logging
+
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
-
-import logging
 
 from .air_qual_controller import fetch_available_sites
 from .const import DOMAIN, CONF_SITE_ID, CONF_SITE_NAME

@@ -1,4 +1,3 @@
-﻿
 from typing import Final
 
 DOMAIN: Final = "nsw_air_quality"
