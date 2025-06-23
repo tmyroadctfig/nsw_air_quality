@@ -1,0 +1,28 @@
+# Core Home Assistant dependencies
+homeassistant>=2023.9.0
+
+# Integration requirements from manifest.json
+iso8601
+
+# HTTP client for API calls
+aiohttp
+
+# Testing framework
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+pytest-timeout>=2.1.0
+
+# Code quality tools
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Additional testing utilities
+pytest-mock>=3.10.0
+pytest-homeassistant-custom-component>=0.13.0
+
+# Type stubs
+types-requests
+
+# Utilities
+voluptuous

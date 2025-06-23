@@ -135,6 +135,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+test_env/
+nsw_test_env/
+*_test_env/
 
 # Spyder project settings
 .spyderproject
@@ -169,3 +172,50 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project-specific ignores
+# Test environments and temporary files
+test_api.py
+*_backup/
+*.bak
+
+# IDE and editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Home Assistant specific
+home-assistant.log
+home-assistant_v2.db
+.HA_VERSION
+.uuid
+.cloud
+.storage/
+deps/
+tts/
+www/
+
+# Coverage and test reports
+htmlcov/
+.coverage.*
+coverage.xml
+.pytest_cache/
+test-results/
+test-reports/
+
+# Temporary and cache files
+*.tmp
+*.temp
+.cache/
+.mypy_cache/
+.ruff_cache/

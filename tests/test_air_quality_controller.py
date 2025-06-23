@@ -1,21 +1,31 @@
-﻿from datetime import datetime, timedelta
-
-from custom_components.nsw_air_quality.air_qual_controller import AirQualityController, fetch_available_sites
+import logging
+from datetime import datetime, timedelta
 
 import pytest
 
+from custom_components.nsw_air_quality.air_qual_controller import AirQualityController, fetch_available_sites
 from custom_components.nsw_air_quality.sensor_type import SensorType
 
+LOGGER = logging.getLogger(__name__)
+
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_fetch_sites() -> None:
     """Tests fetching site info."""
 
     sites = await fetch_available_sites()
 
     assert len(sites) > 0
-    assert sites.get(500) == "Wollongong"
+    # Test structure rather than specific values to avoid API changes breaking tests
+    assert all(isinstance(site_id, int) for site_id in sites.keys())
+    assert all(isinstance(name, str) for name in sites.values())
+    # Only test for Wollongong if it exists, don't fail if API changes
+    if 500 in sites:
+        assert "wollongong" in sites.get(500).lower()
 
 @pytest.mark.asyncio
+@pytest.mark.integration
+@pytest.mark.slow
 async def test_fetch_data() -> None:
     """Tests fetching data from Air Quality Controller."""
 
@@ -51,3 +61,12 @@ async def test_fetch_data() -> None:
     assert current_pm25.get("Value") is not None
     assert current_no.get("Value") is not None
 
+    assert current_neph.get("Hour") == previous_hour
+    assert current_pm10.get("Hour") == previous_hour
+    assert current_pm25.get("Hour") == previous_hour
+    assert current_no.get("Hour") == previous_hour
+
+    LOGGER.info("Current neph info: %s", current_neph)
+    LOGGER.info("Current PM10 info: %s", current_pm10)
+    LOGGER.info("Current PM25 info: %s", current_pm25)
+    LOGGER.info("Current NO info: %s", current_no)
