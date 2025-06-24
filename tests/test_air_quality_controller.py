@@ -10,6 +10,7 @@ LOGGER = logging.getLogger(__name__)
 
 @pytest.mark.asyncio
 @pytest.mark.integration
+@pytest.mark.skip(reason="Requires network access - run manually")
 async def test_fetch_sites() -> None:
     """Tests fetching site info."""
 
@@ -26,6 +27,7 @@ async def test_fetch_sites() -> None:
 @pytest.mark.asyncio
 @pytest.mark.integration
 @pytest.mark.slow
+@pytest.mark.skip(reason="Requires network access - run manually")
 async def test_fetch_data() -> None:
     """Tests fetching data from Air Quality Controller."""
 
