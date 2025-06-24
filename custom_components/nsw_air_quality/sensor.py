@@ -68,26 +68,26 @@ class AirQualitySensor(SensorEntity):
 
             case SensorType.CO:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
-                #self._attr_device_class = SensorDeviceClass.CO
+                # self._attr_device_class = SensorDeviceClass.CO
 
             case SensorType.NH3:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
 
             case SensorType.NO:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
-                #self._attr_device_class = SensorDeviceClass.NITROGEN_MONOXIDE
+                # self._attr_device_class = SensorDeviceClass.NITROGEN_MONOXIDE
 
             case SensorType.NO2:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
-                #self._attr_device_class = SensorDeviceClass.NITROGEN_DIOXIDE
+                # self._attr_device_class = SensorDeviceClass.NITROGEN_DIOXIDE
 
             case SensorType.OZONE:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
-                #self._attr_device_class = SensorDeviceClass.OZONE
+                # self._attr_device_class = SensorDeviceClass.OZONE
 
             case SensorType.SO2:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
-                #self._attr_device_class = SensorDeviceClass.SULPHUR_DIOXIDE
+                # self._attr_device_class = SensorDeviceClass.SULPHUR_DIOXIDE
 
             case _:
                 _LOGGER.error("Unknown sensor type: %s", sensor_type)
@@ -109,7 +109,7 @@ class AirQualitySensor(SensorEntity):
             self._attr_native_value = None
             return
 
-        previous_hour = (datetime.now() - timedelta(hours = 1)).hour
+        previous_hour = (datetime.now() - timedelta(hours=1)).hour
         entry = next((item for item in sensor_data if item["Hour"] == previous_hour), None)
         self._attr_native_value = entry.get("Value")
 

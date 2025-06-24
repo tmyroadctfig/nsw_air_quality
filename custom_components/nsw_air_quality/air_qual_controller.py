@@ -23,7 +23,7 @@ async def fetch_available_sites():
         async with session.get(SITE_DETAILS_ENDPOINT) as response:
             if response.status == 200:
                 data = await response.json()
-                return { site["Site_Id"]: site["SiteName"].title() for site in data }
+                return {site["Site_Id"]: site["SiteName"].title() for site in data}
             else:
                 _LOGGER.error("Error fetching site list: %s", response.status)
                 return {}
@@ -35,7 +35,7 @@ class AirQualityController:
         self._site_data = None
 
     def add_site(self, site_id):
-        if not site_id in self._site_ids:
+        if site_id not in self._site_ids:
             self._site_ids.append(site_id)
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
@@ -43,12 +43,12 @@ class AirQualityController:
         """Fetch new data and send a POST request."""
 
         now = datetime.now()
-        start_date=(now - timedelta(days=1)).strftime("%Y-%m-%dT%H:00:00")
-        end_date=now.strftime("%Y-%m-%dT%H:00:00")
+        start_date = (now - timedelta(days=1)).strftime("%Y-%m-%dT%H:00:00")
+        end_date = now.strftime("%Y-%m-%dT%H:00:00")
         sites_list = quote(",".join(map(str, self._site_ids)))
         url = f"{SITE_DATA_ENDPOINT2}?site_ids={sites_list}&start_datetime={start_date}&end_datetime={end_date}"
 
-        async with aiohttp.ClientSession(headers = HEADERS) as session:
+        async with aiohttp.ClientSession(headers=HEADERS) as session:
             _LOGGER.info("Fetching site readings for site IDs: %s", self._site_ids)
             try:
                 async with session.get(url) as response:
