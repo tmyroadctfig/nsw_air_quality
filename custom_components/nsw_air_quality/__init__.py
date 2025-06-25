@@ -8,6 +8,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
 
+
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the integration from configuration.yaml (if applicable)."""
     hass.data.setdefault(DOMAIN, {})

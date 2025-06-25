@@ -41,20 +41,14 @@ async def test_fetch_available_sites_success():
         {"Site_Id": 456, "SiteName": "TEST SITE TWO"},
     ]
     
-    with patch('custom_components.nsw_air_quality.air_qual_controller.aiohttp.ClientSession') as mock_session:
+    with patch('custom_components.nsw_air_quality.air_qual_controller.aiohttp.ClientSession.get') as mock_get:
         mock_response = AsyncMock()
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value=mock_response_data)
+        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_response.__aexit__ = AsyncMock(return_value=None)
         
-        mock_get = AsyncMock()
-        mock_get.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_get.__aexit__ = AsyncMock(return_value=None)
-        
-        mock_session_instance = AsyncMock()
-        mock_session_instance.get.return_value = mock_get
-        mock_session_instance.__aenter__ = AsyncMock(return_value=mock_session_instance)
-        mock_session_instance.__aexit__ = AsyncMock(return_value=None)
-        mock_session.return_value = mock_session_instance
+        mock_get.return_value = mock_response
         
         sites = await fetch_available_sites()
         
@@ -67,19 +61,13 @@ async def test_fetch_available_sites_success():
 @pytest.mark.asyncio
 async def test_fetch_available_sites_error():
     """Test site fetching with error response."""
-    with patch('custom_components.nsw_air_quality.air_qual_controller.aiohttp.ClientSession') as mock_session:
+    with patch('custom_components.nsw_air_quality.air_qual_controller.aiohttp.ClientSession.get') as mock_get:
         mock_response = AsyncMock()
         mock_response.status = 500
+        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_response.__aexit__ = AsyncMock(return_value=None)
         
-        mock_get = AsyncMock()
-        mock_get.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_get.__aexit__ = AsyncMock(return_value=None)
-        
-        mock_session_instance = AsyncMock()
-        mock_session_instance.get.return_value = mock_get
-        mock_session_instance.__aenter__ = AsyncMock(return_value=mock_session_instance)
-        mock_session_instance.__aexit__ = AsyncMock(return_value=None)
-        mock_session.return_value = mock_session_instance
+        mock_get.return_value = mock_response
         
         sites = await fetch_available_sites()
         

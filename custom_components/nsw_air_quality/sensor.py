@@ -15,6 +15,7 @@ from .sensor_type import SensorType
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the sensor platform."""
     hass.data.setdefault(DOMAIN, {})
@@ -38,6 +39,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
             sensors.append(AirQualitySensor(site_id, site_name, controller, sensor))
 
     async_add_entities(sensors, True)
+
 
 class AirQualitySensor(SensorEntity):
     def __init__(self, site_id: str, site_name: str, controller: AirQualityController, sensor_type: SensorType, initial_value: float | None = None):

@@ -16,6 +16,7 @@ SITE_DATA_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_Observatio
 SITE_DETAILS_ENDPOINT = "https://data.airquality.nsw.gov.au/api/Data/get_SiteDetails"
 SITE_DATA_ENDPOINT2 = "https://www.airquality.nsw.gov.au/_design/air-quality-api/getsitedetails2/getconcentrationdata-station"
 
+
 async def fetch_available_sites():
     """Fetch site list from the API."""
     async with aiohttp.ClientSession(headers=HEADERS) as session:
@@ -27,6 +28,7 @@ async def fetch_available_sites():
             else:
                 _LOGGER.error("Error fetching site list: %s", response.status)
                 return {}
+
 
 class AirQualityController:
     def __init__(self):
