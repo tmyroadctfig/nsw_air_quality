@@ -46,9 +46,12 @@ async def test_fetch_available_sites_success():
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value=mock_response_data)
         
+        mock_get = AsyncMock()
+        mock_get.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.__aexit__ = AsyncMock(return_value=None)
+        
         mock_session_instance = AsyncMock()
-        mock_session_instance.get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_session_instance.get.return_value.__aexit__ = AsyncMock(return_value=None)
+        mock_session_instance.get.return_value = mock_get
         mock_session_instance.__aenter__ = AsyncMock(return_value=mock_session_instance)
         mock_session_instance.__aexit__ = AsyncMock(return_value=None)
         mock_session.return_value = mock_session_instance
@@ -56,7 +59,7 @@ async def test_fetch_available_sites_success():
         sites = await fetch_available_sites()
         
         assert len(sites) == 2
-        assert sites[123] == "Test Site One"  # Should be title cased
+        assert sites[123] == "Test Site One"
         assert sites[456] == "Test Site Two"
 
 
@@ -68,9 +71,12 @@ async def test_fetch_available_sites_error():
         mock_response = AsyncMock()
         mock_response.status = 500
         
+        mock_get = AsyncMock()
+        mock_get.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.__aexit__ = AsyncMock(return_value=None)
+        
         mock_session_instance = AsyncMock()
-        mock_session_instance.get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_session_instance.get.return_value.__aexit__ = AsyncMock(return_value=None)
+        mock_session_instance.get.return_value = mock_get
         mock_session_instance.__aenter__ = AsyncMock(return_value=mock_session_instance)
         mock_session_instance.__aexit__ = AsyncMock(return_value=None)
         mock_session.return_value = mock_session_instance
