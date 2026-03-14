@@ -17,7 +17,7 @@ def test_sensor_type_enum():
         SensorType.OZONE,
         SensorType.SO2,
     ]
-    
+
     assert len(SensorType) == 9
     for sensor in expected_sensors:
         assert sensor in SensorType
