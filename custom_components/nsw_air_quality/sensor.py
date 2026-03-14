@@ -4,19 +4,19 @@ import logging
 from datetime import datetime, timedelta
 
 from homeassistant import exceptions
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, CONCENTRATION_PARTS_PER_MILLION
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 
 from .air_qual_controller import AirQualityController
 from .const import (
-    DOMAIN,
-    SHORT_ATTRIBUTION,
-    MODEL_NAME,
-    CONF_SITE_ID,
-    CONF_CONTROLLER,
     CONCENTRATION_PARTS_PER_HUNDRED_MILLION,
+    CONF_CONTROLLER,
+    CONF_SITE_ID,
+    DOMAIN,
+    MODEL_NAME,
+    SHORT_ATTRIBUTION,
 )
 from .sensor_type import SensorType
 

@@ -1,7 +1,7 @@
 """Test configuration and fixtures."""
 
-import sys
 import os
+import sys
 from unittest.mock import MagicMock
 
 # Add the custom_components directory to the Python path
