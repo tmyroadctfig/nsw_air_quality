@@ -5,7 +5,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 
 from .air_qual_controller import fetch_available_sites
-from .const import DOMAIN, CONF_SITE_ID, CONF_SITE_NAME
+from .const import CONF_SITE_ID, CONF_SITE_NAME, DOMAIN
 from .sensor_type import SensorType
 
 _LOGGER = logging.getLogger(__name__)

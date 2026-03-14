@@ -4,9 +4,9 @@ import pytest
 from aioresponses import aioresponses
 
 from custom_components.nsw_air_quality.air_qual_controller import (
+    SITE_DETAILS_ENDPOINT,
     AirQualityController,
     fetch_available_sites,
-    SITE_DETAILS_ENDPOINT,
 )
 from custom_components.nsw_air_quality.sensor_type import SensorType
 

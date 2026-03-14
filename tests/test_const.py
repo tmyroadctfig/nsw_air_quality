@@ -1,14 +1,14 @@
 import pytest
 
 from custom_components.nsw_air_quality.const import (
-    DOMAIN,
-    SHORT_ATTRIBUTION,
-    MODEL_NAME,
+    CONCENTRATION_PARTS_PER_HUNDRED_MILLION,
+    CONF_CONTROLLER,
     CONF_SITE_ID,
     CONF_SITE_NAME,
-    CONF_CONTROLLER,
+    DOMAIN,
     HEADERS,
-    CONCENTRATION_PARTS_PER_HUNDRED_MILLION,
+    MODEL_NAME,
+    SHORT_ATTRIBUTION,
 )
 
 
