@@ -113,8 +113,8 @@ class AirQualitySensor(SensorEntity):
 
         previous_hour = (datetime.now() - timedelta(hours=1)).hour
         entry = next((item for item in sensor_data if item["Hour"] == previous_hour), None)
-        self._attr_native_value = entry.get("Value")
+        self._attr_native_value = entry.get("Value") if entry is not None else None
 
-        if self._attr_native_value < 0:
-            _LOGGER.warning("Negative value for sensor '%s': %f", self._attr_name, entry.get("Value"))
+        if self._attr_native_value is not None and self._attr_native_value < 0:
+            _LOGGER.debug("Negative value for sensor '%s': %f", self._attr_name, entry.get("Value"))
             self._attr_native_value = 0
