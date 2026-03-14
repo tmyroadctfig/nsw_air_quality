@@ -10,7 +10,14 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 
 from .air_qual_controller import AirQualityController
-from .const import DOMAIN, SHORT_ATTRIBUTION, MODEL_NAME, CONF_SITE_ID, CONF_CONTROLLER, CONCENTRATION_PARTS_PER_HUNDRED_MILLION
+from .const import (
+    DOMAIN,
+    SHORT_ATTRIBUTION,
+    MODEL_NAME,
+    CONF_SITE_ID,
+    CONF_CONTROLLER,
+    CONCENTRATION_PARTS_PER_HUNDRED_MILLION,
+)
 from .sensor_type import SensorType
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,7 +49,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class AirQualitySensor(SensorEntity):
-    def __init__(self, site_id: str, site_name: str, controller: AirQualityController, sensor_type: SensorType, initial_value: float | None = None):
+    def __init__(
+        self,
+        site_id: str,
+        site_name: str,
+        controller: AirQualityController,
+        sensor_type: SensorType,
+        initial_value: float | None = None,
+    ):
         """Initialize the sensor."""
         _LOGGER.info("Initializing site '%s' (site-id:%s) sensor type: '%s'", site_name, site_id, sensor_type)
 

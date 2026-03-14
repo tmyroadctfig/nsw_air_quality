@@ -8,6 +8,7 @@ from custom_components.nsw_air_quality.sensor_type import SensorType
 
 LOGGER = logging.getLogger(__name__)
 
+
 @pytest.mark.asyncio
 @pytest.mark.integration
 @pytest.mark.skip(reason="Requires network access - run manually")
@@ -24,6 +25,7 @@ async def test_fetch_sites() -> None:
     if 500 in sites:
         assert "wollongong" in sites.get(500).lower()
 
+
 @pytest.mark.asyncio
 @pytest.mark.integration
 @pytest.mark.slow
@@ -37,7 +39,7 @@ async def test_fetch_data() -> None:
 
     await controller.async_update()
 
-    previous_hour = (datetime.now() - timedelta(hours = 1)).hour
+    previous_hour = (datetime.now() - timedelta(hours=1)).hour
     neph = controller.site_reading(site_id, SensorType.NEPH)
     pm10 = controller.site_reading(site_id, SensorType.PM10)
     pm25 = controller.site_reading(site_id, SensorType.PM25)

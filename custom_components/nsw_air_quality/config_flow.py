@@ -40,10 +40,12 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         sensor_options = {vol.Optional(sensor.name.upper(), default=True): bool for sensor in SensorType}
 
-        schema = vol.Schema({
-            vol.Required(CONF_SITE_ID): vol.In(available_sites),
-            **sensor_options,  # Unpacking the dynamically generated dictionary
-        })
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_SITE_ID): vol.In(available_sites),
+                **sensor_options,  # Unpacking the dynamically generated dictionary
+            }
+        )
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 

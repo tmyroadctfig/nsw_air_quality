@@ -4,7 +4,7 @@ import os
 from unittest.mock import MagicMock
 
 # Add the custom_components directory to the Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 # Provide a lightweight homeassistant stub when the full package is unavailable.
 # In CI the real package is installed; this fallback enables local development
