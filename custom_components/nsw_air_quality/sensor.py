@@ -1,4 +1,4 @@
-"""Sensor platform for NSW Air Quality Data """
+"""Sensor platform for NSW Air Quality Data"""
 
 import logging
 from datetime import datetime, timedelta
@@ -21,6 +21,28 @@ from .const import (
 from .sensor_type import SensorType
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _select_value(current_value, sensor_data):
+    """Return the new sensor value, or keep current_value if API data is invalid.
+
+    Keeps the previous value when sensor_data is None, no entry exists for the
+    previous hour, or the reported value is None or negative.
+    """
+    if sensor_data is None:
+        return current_value
+
+    previous_hour = (datetime.now() - timedelta(hours=1)).hour
+    entry = next((item for item in sensor_data if item["Hour"] == previous_hour), None)
+    if entry is None:
+        return current_value
+
+    value = entry.get("Value")
+    if value is None or value < 0:
+        _LOGGER.debug("Invalid API value %s, keeping previous value", value)
+        return current_value
+
+    return value
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -121,14 +143,4 @@ class AirQualitySensor(SensorEntity):
         await self.controller.async_update()
 
         sensor_data = self.controller.site_reading(self._site_id, self._sensor_type)
-        if sensor_data is None:
-            self._attr_native_value = None
-            return
-
-        previous_hour = (datetime.now() - timedelta(hours=1)).hour
-        entry = next((item for item in sensor_data if item["Hour"] == previous_hour), None)
-        self._attr_native_value = entry.get("Value") if entry is not None else None
-
-        if self._attr_native_value is not None and self._attr_native_value < 0:
-            _LOGGER.debug("Negative value for sensor '%s': %f", self._attr_name, entry.get("Value"))
-            self._attr_native_value = 0
+        self._attr_native_value = _select_value(self._attr_native_value, sensor_data)
