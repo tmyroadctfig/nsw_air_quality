@@ -93,3 +93,18 @@ def test_site_reading_with_data():
     # Test non-existent sensor type
     result = controller.site_reading(123, SensorType.CO)
     assert result == []
+
+
+@pytest.mark.unit
+def test_site_reading_skips_entries_with_missing_parameter():
+    """Entries with no Parameter field are silently skipped."""
+    controller = AirQualityController()
+    controller._site_data = [
+        {"Site_Id": 123, "Parameter": {"ParameterCode": "PM2.5"}, "Value": 15.5},
+        {"Site_Id": 123, "Parameter": None, "Value": 99.0},
+        {"Site_Id": 123, "Value": 77.0},  # missing Parameter key entirely
+    ]
+
+    result = controller.site_reading(123, SensorType.PM25)
+    assert len(result) == 1
+    assert result[0]["Value"] == 15.5

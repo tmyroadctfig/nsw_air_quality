@@ -72,5 +72,5 @@ class AirQualityController:
             parameter_code = "PM2.5"
 
         site_data = [entry for entry in self._site_data if entry.get("Site_Id") == site_id]
-        sensor_data = [entry for entry in site_data if entry.get("Parameter").get("ParameterCode") == parameter_code]
+        sensor_data = [entry for entry in site_data if (entry.get("Parameter") or {}).get("ParameterCode") == parameter_code]
         return sensor_data
