@@ -19,7 +19,7 @@ flake8>=6.0.0
 mypy>=1.0.0
 
 # Additional testing utilities
-pytest-mock>=3.10.0
+pytest-mock>=3.15.1
 
 # Type stubs
 types-requests
