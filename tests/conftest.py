@@ -15,6 +15,34 @@ try:
 except ImportError:
     _ha = MagicMock()
     _ha.util.Throttle = lambda min_time: lambda f: f
+    _ha.core.callback = lambda f: f
+
+    class _StubConfigFlow:
+        def __init_subclass__(cls, domain=None, **kwargs):
+            super().__init_subclass__(**kwargs)
+
+        def async_create_entry(self, title="", data=None):
+            return {"type": "create_entry", "title": title, "data": data or {}}
+
+        def async_show_form(self, step_id, data_schema=None, errors=None):
+            return {"type": "form", "step_id": step_id, "data_schema": data_schema, "errors": errors or {}}
+
+        def async_abort(self, reason):
+            return {"type": "abort", "reason": reason}
+
+        def _async_current_entries(self):
+            return []
+
+    class _StubOptionsFlow:
+        def async_create_entry(self, title="", data=None):
+            return {"type": "create_entry", "title": title, "data": data or {}}
+
+        def async_show_form(self, step_id, data_schema=None, errors=None):
+            return {"type": "form", "step_id": step_id, "data_schema": data_schema, "errors": errors or {}}
+
+    _ha.config_entries.ConfigFlow = _StubConfigFlow
+    _ha.config_entries.OptionsFlow = _StubOptionsFlow
+
     _ha_modules = {
         "homeassistant": _ha,
         "homeassistant.util": _ha.util,
