@@ -56,6 +56,24 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return entry
         return None
 
+    @staticmethod
     @callback
-    def async_get_options_flow(self):
-        return NswAirQualityConfigFlow(self.config_entry)
+    def async_get_options_flow(config_entry):
+        return NswAirQualityOptionsFlow(config_entry)
+
+
+class NswAirQualityOptionsFlow(config_entries.OptionsFlow):
+    def __init__(self, config_entry):
+        self._config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        sensor_options = {}
+        for sensor in SensorType:
+            key = sensor.name.upper()
+            current = self._config_entry.options.get(key, self._config_entry.data.get(key, True))
+            sensor_options[vol.Optional(key, default=current)] = bool
+
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(sensor_options))
