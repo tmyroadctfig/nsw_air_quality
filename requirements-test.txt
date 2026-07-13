@@ -1,5 +1,5 @@
 # Core Home Assistant dependencies
-homeassistant>=2026.5.0
+homeassistant>=2026.7.2
 
 # Integration requirements from manifest.json
 iso8601
