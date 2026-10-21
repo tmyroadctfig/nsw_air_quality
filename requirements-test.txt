@@ -6,7 +6,6 @@ iso8601
 
 # HTTP client for API calls
 aiohttp
-aioresponses
 
 # Testing framework
 pytest>=9.0.3

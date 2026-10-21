@@ -1,7 +1,8 @@
 """Unit tests for the air quality controller."""
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from aioresponses import aioresponses
 
 from custom_components.nsw_air_quality.air_qual_controller import (
     SITE_DETAILS_ENDPOINT,
@@ -9,6 +10,21 @@ from custom_components.nsw_air_quality.air_qual_controller import (
     fetch_available_sites,
 )
 from custom_components.nsw_air_quality.sensor_type import SensorType
+
+
+def mock_client_session(status, payload=None):
+    """Patch aiohttp.ClientSession so session.get() returns a response with the given status and JSON payload."""
+    response = MagicMock(status=status)
+    response.json = AsyncMock(return_value=payload)
+    response.__aenter__ = AsyncMock(return_value=response)
+    response.__aexit__ = AsyncMock(return_value=False)
+
+    session = MagicMock()
+    session.get = MagicMock(return_value=response)
+    session.__aenter__ = AsyncMock(return_value=session)
+    session.__aexit__ = AsyncMock(return_value=False)
+
+    return patch("custom_components.nsw_air_quality.air_qual_controller.aiohttp.ClientSession", return_value=session)
 
 
 @pytest.mark.unit
@@ -39,10 +55,10 @@ async def test_fetch_available_sites_success():
         {"Site_Id": 456, "SiteName": "TEST SITE TWO"},
     ]
 
-    with aioresponses() as m:
-        m.get(SITE_DETAILS_ENDPOINT, payload=mock_response_data)
-
+    with mock_client_session(200, mock_response_data) as client_session:
         sites = await fetch_available_sites()
+
+        client_session.return_value.get.assert_called_once_with(SITE_DETAILS_ENDPOINT)
 
         assert len(sites) == 2
         assert sites[123] == "Test Site One"
@@ -53,9 +69,7 @@ async def test_fetch_available_sites_success():
 @pytest.mark.asyncio
 async def test_fetch_available_sites_error():
     """Test site fetching with error response."""
-    with aioresponses() as m:
-        m.get(SITE_DETAILS_ENDPOINT, status=500)
-
+    with mock_client_session(500):
         sites = await fetch_available_sites()
 
         assert sites == {}
