@@ -1,6 +1,6 @@
 """Unit tests for the config and options flows."""
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant import config_entries
@@ -100,7 +100,8 @@ async def test_setup_entry_reloads_when_options_change():
     hass.config_entries.async_reload = AsyncMock(return_value=True)
     entry = make_entry()
 
-    assert await async_setup_entry(hass, entry)
+    with patch("custom_components.nsw_air_quality.er.async_migrate_entries", AsyncMock()):
+        assert await async_setup_entry(hass, entry)
 
     entry.add_update_listener.assert_called_once()
     entry.async_on_unload.assert_called_once_with(entry.add_update_listener.return_value)

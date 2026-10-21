@@ -129,7 +129,7 @@ class AirQualitySensor(SensorEntity):
 
         self._attr_has_entity_name = True
         self._attr_name = f"{sensor_type.name}"
-        self._attr_unique_id = f"{sensor_type.name.lower()}"
+        self._attr_unique_id = f"{site_id}_{sensor_type.name.lower()}"
         self._attr_state_class = "measurement"
         self._attr_native_value = initial_value
         self.controller = controller

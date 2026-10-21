@@ -77,6 +77,7 @@ except ImportError:
         "homeassistant.helpers.typing": _ha.helpers.typing,
         "homeassistant.helpers.entity": _ha.helpers.entity,
         "homeassistant.helpers.entity_platform": _ha.helpers.entity_platform,
+        "homeassistant.helpers.entity_registry": _ha.helpers.entity_registry,
         "homeassistant.helpers.device_registry": _ha.helpers.device_registry,
         "homeassistant.components": _ha.components,
         "homeassistant.components.sensor": _ha.components.sensor,
