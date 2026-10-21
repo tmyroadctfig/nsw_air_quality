@@ -76,7 +76,7 @@ Both are unauthenticated public endpoints. The `HEADERS` constant in `const.py` 
 
 ### conftest.py shim
 
-`tests/conftest.py` injects a lightweight stub of the `homeassistant` package when the real package is not installed. This lets unit tests run without a full HA install. The stub mocks `Throttle` (wraps the function as-is), `config_entries`, and core constants. If a test starts failing because a newly imported HA symbol is missing from the stub, add it there.
+`tests/conftest.py` injects a lightweight stub of the `homeassistant` package when the real package is not installed. This lets unit tests run without a full HA install. The stub mocks `Throttle` (wraps the function as-is), `callback` (no-op decorator), `config_entries` and core constants, and swaps in minimal `ConfigFlow`/`OptionsFlow` stand-ins so config and options flows can be tested. If a test starts failing because a newly imported HA symbol is missing from the stub, add it there.
 
 ## Code Style
 
