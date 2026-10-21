@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from homeassistant import exceptions
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
-from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, CONCENTRATION_PARTS_PER_MILLION
+from homeassistant.const import UnitOfDensity, UnitOfRatio
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 
@@ -97,19 +97,19 @@ class AirQualitySensor(SensorEntity):
                 self._attr_native_unit_of_measurement = "10^-4 m^-1"
 
             case SensorType.PM10:
-                self._attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+                self._attr_native_unit_of_measurement = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
                 self._attr_device_class = SensorDeviceClass.PM10
 
             case SensorType.PM25:
-                self._attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+                self._attr_native_unit_of_measurement = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
                 self._attr_device_class = SensorDeviceClass.PM25
 
             case SensorType.CO:
-                self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+                self._attr_native_unit_of_measurement = UnitOfRatio.PARTS_PER_MILLION
                 # self._attr_device_class = SensorDeviceClass.CO
 
             case SensorType.NH3:
-                self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+                self._attr_native_unit_of_measurement = UnitOfRatio.PARTS_PER_MILLION
 
             case SensorType.NO:
                 self._attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_HUNDRED_MILLION
