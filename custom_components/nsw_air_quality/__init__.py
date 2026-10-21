@@ -20,9 +20,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = entry.data  # Store config data
 
     # Forward the entry to the sensor platform
-    hass.async_create_task(hass.config_entries.async_forward_entry_setups(entry, ["sensor"]))
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+
+    # Reload when the options flow changes which pollutants are tracked
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     return True
+
+
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the entry so sensors match the updated options."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
