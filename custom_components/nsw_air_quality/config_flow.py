@@ -56,6 +56,25 @@ class NswAirQualityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return entry
         return None
 
+    @staticmethod
     @callback
-    def async_get_options_flow(self):
-        return NswAirQualityConfigFlow(self.config_entry)
+    def async_get_options_flow(config_entry):
+        return NswAirQualityOptionsFlow()
+
+
+class NswAirQualityOptionsFlow(config_entries.OptionsFlow):
+    """Change which pollutants are tracked for a site."""
+
+    async def async_step_init(self, user_input=None):
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        entry = self.config_entry
+        schema = vol.Schema(
+            {
+                vol.Optional(sensor.name, default=entry.options.get(sensor.name, entry.data.get(sensor.name, True))): bool
+                for sensor in SensorType
+            }
+        )
+
+        return self.async_show_form(step_id="init", data_schema=schema)
