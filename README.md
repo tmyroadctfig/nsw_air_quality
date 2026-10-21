@@ -7,6 +7,8 @@
 
 A Home Assistant custom integration that provides real-time air quality data from NSW (New South Wales) Government air monitoring stations across Australia.
 
+> This is an unofficial community project. It is not affiliated with or endorsed by the NSW Government.
+
 ## Features
 
 - **Real-time Air Quality Data**: Get current air quality readings from official NSW Government monitoring stations
