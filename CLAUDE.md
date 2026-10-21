@@ -37,6 +37,11 @@ This is a Home Assistant custom integration (HACS-compatible) that polls the NSW
 /usr/local/bin/python3 -m isort custom_components/ tests/
 ```
 
+## Working Principles
+
+- **Leave things better than you found them.** When touching an area, fix nearby small issues (unclear names, missing type hints, dead code, stale comments) and add missing tests for code you're relying on, as long as it stays within the scope of the change.
+- **Every behaviour change comes with tests.** Follow the TDD workflow below; don't merge new behaviour or bug fixes without a test that covers them.
+
 ## Testing
 
 Use TDD when adding new behaviour or fixing bugs:

@@ -1,12 +1,11 @@
 # Core Home Assistant dependencies
-homeassistant>=2026.5.0
+homeassistant>=2026.7.0
 
 # Integration requirements from manifest.json
 iso8601
 
 # HTTP client for API calls
 aiohttp
-aioresponses
 
 # Testing framework
 pytest>=9.0.3
