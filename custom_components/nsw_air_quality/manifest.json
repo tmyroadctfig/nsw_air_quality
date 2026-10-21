@@ -1,15 +1,13 @@
 {
   "domain": "nsw_air_quality",
   "name": "NSW Air Quality",
-  "integration_type": "service",
+  "codeowners": ["@tmyroadctfig"],
   "config_flow": true,
+  "dependencies": [],
   "documentation": "https://github.com/tmyroadctfig/nsw_air_quality",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/tmyroadctfig/nsw_air_quality/issues",
   "requirements": ["iso8601"],
-  "ssdp": [],
-  "zeroconf": [],
-  "homekit": {},
-  "dependencies": [],
-  "version": "0.0.2",
-  "codeowners": ["@tmyroadctfig"]
+  "version": "1.0.4"
 }
