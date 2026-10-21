@@ -10,8 +10,6 @@ from custom_components.nsw_air_quality.config_flow import NswAirQualityConfigFlo
 from custom_components.nsw_air_quality.const import CONF_SITE_ID, CONF_SITE_NAME
 from custom_components.nsw_air_quality.sensor_type import SensorType
 
-pytestmark = pytest.mark.skipif(isinstance(config_entries, MagicMock), reason="Requires the real homeassistant package")
-
 ENTRY_ID = "entry-1"
 
 
@@ -65,6 +63,19 @@ async def test_options_form_defaults_to_current_selection():
     assert defaults["CO"] is False
     assert defaults["NH3"] is True
     assert defaults["PM25"] is True
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_options_form_defaults_missing_pollutants_to_enabled():
+    """Entries created before a pollutant existed have no key for it; default it to on."""
+    entry = make_entry()
+    entry.data = {CONF_SITE_ID: 123, CONF_SITE_NAME: "Test Site"}
+    flow = make_options_flow(entry)
+
+    result = await flow.async_step_init()
+
+    assert all(default is True for default in form_defaults(result).values())
 
 
 @pytest.mark.unit
