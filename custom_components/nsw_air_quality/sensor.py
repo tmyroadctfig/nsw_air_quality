@@ -1,7 +1,6 @@
 """Sensor platform for NSW Air Quality Data"""
 
 import logging
-from datetime import datetime, timedelta
 
 from homeassistant import exceptions
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -16,6 +15,7 @@ from .const import (
     CONF_CONTROLLER,
     CONF_SITE_ID,
     DOMAIN,
+    HOURLY_AVERAGE_FREQUENCY,
     MODEL_NAME,
     SHORT_ATTRIBUTION,
     SITE_AQC_PARAMETER_CODE,
@@ -26,25 +26,24 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _select_value(current_value, sensor_data):
-    """Return the new sensor value, or keep current_value if API data is invalid.
+    """Return the most recent valid hourly reading, or keep current_value if there is none.
 
-    Keeps the previous value when sensor_data is None, no entry exists for the
-    previous hour, or the reported value is None or negative.
+    Only "Hourly average" rows are considered; some pollutants also have rolling-average rows (e.g. ozone
+    4h/8h) for the same hour. Readings that are None or negative are ignored. Readings arrive an hour or two
+    late, so the latest valid hour is used rather than a fixed hour.
     """
-    if sensor_data is None:
+    readings = [
+        entry
+        for entry in sensor_data or []
+        if (entry.get("Parameter") or {}).get("Frequency") == HOURLY_AVERAGE_FREQUENCY
+        and entry.get("Value") is not None
+        and entry["Value"] >= 0
+    ]
+    if not readings:
+        _LOGGER.debug("No valid hourly reading, keeping previous value %s", current_value)
         return current_value
 
-    previous_hour = (datetime.now() - timedelta(hours=1)).hour
-    entry = next((item for item in sensor_data if item["Hour"] == previous_hour), None)
-    if entry is None:
-        return current_value
-
-    value = entry.get("Value")
-    if value is None or value < 0:
-        _LOGGER.debug("Invalid API value %s, keeping previous value", value)
-        return current_value
-
-    return value
+    return max(readings, key=lambda entry: (entry.get("Date"), entry.get("Hour")))["Value"]
 
 
 def _normalise_category(raw_category):
