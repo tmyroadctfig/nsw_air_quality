@@ -63,7 +63,7 @@ The integration follows the standard Home Assistant config-entry pattern. The da
 
 2. `air_qual_controller.py` — `AirQualityController` is the single object shared across all sensors for a given site. It owns the HTTP session and fetches concentration data from the NSW API (throttled to one call per 5 minutes via HA's `Throttle` decorator). `site_reading(site_id, sensor_type)` extracts the most-recent reading from the raw JSON, handling the PM2.5 naming discrepancy (`"PM2.5"` in the API vs `PM25` in the enum).
 
-3. `sensor.py` — One `AirQualitySensor` entity per pollutant per site. All sensors for a site share one device. `_select_value()` enforces data quality: it ignores `None`, negative, or missing values and retains the previous state rather than going `unavailable`.
+3. `sensor.py` — One `AirQualitySensor` entity per pollutant per site, plus one `AirQualityCategorySensor` per site exposing the overall category (good/fair/…): taken from the site-level `AQC` row when present (only returned in all-sites responses), otherwise the worst pollutant category for the latest rated hour. All sensors for a site share one device. `_select_value()` enforces data quality: it ignores `None`, negative, or missing values and retains the previous state rather than going `unavailable`.
 
 4. `sensor_type.py` — `SensorType` enum enumerating the 9 supported pollutants (NEPH, PM10, PM25, CO, NH3, NO, NO2, OZONE, SO2).
 
@@ -76,7 +76,7 @@ Both are unauthenticated public endpoints. The `HEADERS` constant in `const.py` 
 
 ### conftest.py shim
 
-`tests/conftest.py` injects a lightweight stub of the `homeassistant` package when the real package is not installed. This lets unit tests run without a full HA install. The stub mocks `Throttle` (wraps the function as-is), `callback` (no-op decorator), `config_entries` and core constants, and swaps in minimal `ConfigFlow`/`OptionsFlow` stand-ins so config and options flows can be tested. If a test starts failing because a newly imported HA symbol is missing from the stub, add it there.
+`tests/conftest.py` injects a lightweight stub of the `homeassistant` package when the real package is not installed. This lets unit tests run without a full HA install. The stub mocks `Throttle` (wraps the function as-is), `callback` (no-op decorator), `config_entries` and core constants, and swaps in minimal `ConfigFlow`/`OptionsFlow`/`SensorEntity` stand-ins so config/options flows and sensor entities can be tested. If a test starts failing because a newly imported HA symbol is missing from the stub, add it there.
 
 ## Code Style
 

@@ -2,6 +2,7 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import aiohttp
 import pytest
 
 from custom_components.nsw_air_quality.air_qual_controller import (
@@ -122,3 +123,32 @@ def test_site_reading_skips_entries_with_missing_parameter():
     result = controller.site_reading(123, SensorType.PM25)
     assert len(result) == 1
     assert result[0]["Value"] == 15.5
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_failed_fetch_clears_site_data():
+    """An HTTP error leaves no data, so readings return None and sensors keep their previous state."""
+    controller = AirQualityController()
+    controller.add_site(123)
+
+    with mock_client_session(500):
+        await controller.async_update()
+
+    assert controller.site_entries(123) is None
+    assert controller.site_reading(123, SensorType.PM25) is None
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_request_error_clears_site_data():
+    """A connection error leaves no data rather than an error string."""
+    controller = AirQualityController()
+    controller.add_site(123)
+
+    with mock_client_session(200) as client_session:
+        client_session.return_value.get.side_effect = aiohttp.ClientError("boom")
+        await controller.async_update()
+
+    assert controller.site_entries(123) is None
+    assert controller.site_reading(123, SensorType.PM25) is None

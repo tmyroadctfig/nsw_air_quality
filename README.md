@@ -22,6 +22,7 @@ A Home Assistant custom integration that provides real-time air quality data fro
   - **Sulfur Dioxide (SO₂)** - (pphm)
   - **Ammonia (NH₃)** - (ppm)
   - **Nephelometer (NEPH)** - Light scattering coefficient (10⁻⁴ m⁻¹)
+- **Overall Air Quality Category**: The site's rating as shown on the NSW air quality website (Good, Fair, Poor, Very poor, Extremely poor, Hazardous)
 
 - **136+ Monitoring Stations**: Choose from monitoring stations across NSW including Sydney, Newcastle, Wollongong, and regional areas
 - **Automatic Updates**: Data refreshes every 5 minutes
@@ -71,7 +72,7 @@ The integration automatically fetches the latest list of available monitoring st
 
 ## Usage
 
-Once configured, the integration will create sensors for each selected air quality parameter. Sensors are named using the pattern:
+Once configured, the integration will create an overall air quality sensor for the station, plus sensors for each selected air quality parameter. Sensors are named using the pattern:
 
 ```
 sensor.{station_name}_{parameter}
@@ -81,6 +82,7 @@ For example:
 - `sensor.wollongong_pm25`
 - `sensor.randwick_ozone`
 - `sensor.newcastle_no2`
+- `sensor.wollongong_air_quality` (overall category)
 
 ### Sensor States
 
@@ -88,6 +90,8 @@ For example:
 - **Unit of Measurement**: Appropriate unit for each parameter (μg/m³, ppm, pphm, etc.)
 - **Device Class**: Proper Home Assistant device classes for PM2.5 and PM10
 - **Attributes**: Additional metadata about the reading
+
+The overall air quality sensor is an enum sensor with the states `good`, `fair`, `poor`, `very_poor`, `extremely_poor` and `hazardous`. It uses the station's official rating when the API provides one, and otherwise the worst category across the station's pollutants for the latest rated hour. Ratings lag the readings by an hour or two, and the sensor keeps its previous state until a new rating is available.
 
 ## Automation Examples
 
@@ -104,6 +108,16 @@ automation:
       - service: notify.mobile_app_your_phone
         data:
           message: "High PM2.5 levels detected: {{ states('sensor.wollongong_pm25') }} μg/m³"
+
+  - alias: "Poor Air Quality Alert"
+    trigger:
+      - platform: state
+        entity_id: sensor.wollongong_air_quality
+        to: ["poor", "very_poor", "extremely_poor", "hazardous"]
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          message: "Air quality in Wollongong is {{ states('sensor.wollongong_air_quality') }}"
 ```
 
 ### Air Quality Dashboard Card
@@ -112,6 +126,8 @@ automation:
 type: entities
 title: Air Quality - Wollongong
 entities:
+  - entity: sensor.wollongong_air_quality
+    name: Air quality
   - entity: sensor.wollongong_pm25
     name: PM2.5
   - entity: sensor.wollongong_pm10
