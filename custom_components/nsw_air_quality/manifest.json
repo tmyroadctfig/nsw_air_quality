@@ -9,5 +9,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/tmyroadctfig/nsw_air_quality/issues",
   "requirements": ["iso8601"],
-  "version": "1.0.4"
+  "version": "1.1.0"
 }
