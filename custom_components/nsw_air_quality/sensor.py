@@ -1,7 +1,6 @@
 """Sensor platform for NSW Air Quality Data"""
 
 import logging
-from datetime import datetime, timedelta
 
 from homeassistant import exceptions
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -11,12 +10,15 @@ from homeassistant.helpers.entity import DeviceInfo
 
 from .air_qual_controller import AirQualityController
 from .const import (
+    AIR_QUALITY_CATEGORIES,
     CONCENTRATION_PARTS_PER_HUNDRED_MILLION,
     CONF_CONTROLLER,
     CONF_SITE_ID,
     DOMAIN,
+    HOURLY_AVERAGE_FREQUENCY,
     MODEL_NAME,
     SHORT_ATTRIBUTION,
+    SITE_AQC_PARAMETER_CODE,
 )
 from .sensor_type import SensorType
 
@@ -24,25 +26,68 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _select_value(current_value, sensor_data):
-    """Return the new sensor value, or keep current_value if API data is invalid.
+    """Return the most recent valid hourly reading, or keep current_value if there is none.
 
-    Keeps the previous value when sensor_data is None, no entry exists for the
-    previous hour, or the reported value is None or negative.
+    Only "Hourly average" rows are considered; some pollutants also have rolling-average rows (e.g. ozone
+    4h/8h) for the same hour. Readings that are None or negative are ignored. Readings arrive an hour or two
+    late, so the latest valid hour is used rather than a fixed hour.
     """
-    if sensor_data is None:
+    readings = [
+        entry
+        for entry in sensor_data or []
+        if (entry.get("Parameter") or {}).get("Frequency") == HOURLY_AVERAGE_FREQUENCY
+        and entry.get("Value") is not None
+        and entry["Value"] >= 0
+    ]
+    if not readings:
+        _LOGGER.debug("No valid hourly reading, keeping previous value %s", current_value)
         return current_value
 
-    previous_hour = (datetime.now() - timedelta(hours=1)).hour
-    entry = next((item for item in sensor_data if item["Hour"] == previous_hour), None)
-    if entry is None:
-        return current_value
+    return max(readings, key=lambda entry: (entry.get("Date"), entry.get("Hour")))["Value"]
 
-    value = entry.get("Value")
-    if value is None or value < 0:
-        _LOGGER.debug("Invalid API value %s, keeping previous value", value)
-        return current_value
 
-    return value
+def _normalise_category(raw_category):
+    """Map an API category such as "VERY POOR" onto a sensor option, or None if it isn't a known rating."""
+    if not raw_category:
+        return None
+
+    category = raw_category.strip().lower().replace(" ", "_").replace("-", "_")
+    return category if category in AIR_QUALITY_CATEGORIES else None
+
+
+def _select_category(current_category, site_entries):
+    """Return the site's overall air quality category, or keep current_category if no rating is available.
+
+    Uses the most recent hour with any rating. The official site-level AQC row is preferred; it is only
+    present in some API responses, so otherwise fall back to the worst pollutant category for that hour.
+    """
+    rated = []
+    for entry in site_entries or []:
+        category = _normalise_category(entry.get("AirQualityCategory"))
+        if category is not None:
+            rated.append(((entry.get("Date"), entry.get("Hour")), entry, category))
+
+    if not rated:
+        return current_category
+
+    latest_hour = max(hour for hour, _, _ in rated)
+    latest = [(entry, category) for hour, entry, category in rated if hour == latest_hour]
+
+    for entry, category in latest:
+        if (entry.get("Parameter") or {}).get("ParameterCode") == SITE_AQC_PARAMETER_CODE:
+            return category
+
+    return max((category for _, category in latest), key=AIR_QUALITY_CATEGORIES.index)
+
+
+def _device_info(site_id, site_name):
+    return DeviceInfo(
+        entry_type=DeviceEntryType.SERVICE,
+        identifiers={(DOMAIN, f"{site_id}")},
+        manufacturer=SHORT_ATTRIBUTION,
+        model=MODEL_NAME,
+        name=f"{site_name}",
+    )
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -56,7 +101,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     controller.add_site(site_id)
 
-    sensors = []
+    sensors = [AirQualityCategorySensor(site_id, site_name, controller)]
 
     for sensor in SensorType:
         # Convert Enum name to uppercase for matching config keys
@@ -84,7 +129,7 @@ class AirQualitySensor(SensorEntity):
 
         self._attr_has_entity_name = True
         self._attr_name = f"{sensor_type.name}"
-        self._attr_unique_id = f"{sensor_type.name.lower()}"
+        self._attr_unique_id = f"{site_id}_{sensor_type.name.lower()}"
         self._attr_state_class = "measurement"
         self._attr_native_value = initial_value
         self.controller = controller
@@ -131,16 +176,33 @@ class AirQualitySensor(SensorEntity):
                 _LOGGER.error("Unknown sensor type: %s", sensor_type)
                 raise exceptions.HomeAssistantError("Invalid sensor type")
 
-        self._attr_device_info = DeviceInfo(
-            entry_type=DeviceEntryType.SERVICE,
-            identifiers={(DOMAIN, f"{self._site_id}")},
-            manufacturer=SHORT_ATTRIBUTION,
-            model=MODEL_NAME,
-            name=f"{site_name}",
-        )
+        self._attr_device_info = _device_info(site_id, site_name)
 
     async def async_update(self):
         await self.controller.async_update()
 
         sensor_data = self.controller.site_reading(self._site_id, self._sensor_type)
         self._attr_native_value = _select_value(self._attr_native_value, sensor_data)
+
+
+class AirQualityCategorySensor(SensorEntity):
+    """Overall air quality category for a site, e.g. "good" or "fair"."""
+
+    def __init__(self, site_id: str, site_name: str, controller: AirQualityController):
+        self._attr_has_entity_name = True
+        self._attr_name = "Air quality"
+        self._attr_translation_key = "air_quality_category"
+        self._attr_unique_id = f"{site_id}_air_quality_category"
+        self._attr_device_class = SensorDeviceClass.ENUM
+        self._attr_options = AIR_QUALITY_CATEGORIES
+        self._attr_native_value = None
+        self._attr_device_info = _device_info(site_id, site_name)
+        self.controller = controller
+
+        self._site_id = site_id
+
+    async def async_update(self):
+        await self.controller.async_update()
+
+        site_entries = self.controller.site_entries(self._site_id)
+        self._attr_native_value = _select_category(self._attr_native_value, site_entries)

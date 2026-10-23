@@ -47,6 +47,11 @@ class _StubOptionsFlow(_StubFlow):
         return self.hass.config_entries.async_get_known_entry(self.handler)
 
 
+# Plain base class so sensor entities can be instantiated and updated in unit tests.
+class _StubSensorEntity:
+    pass
+
+
 # Provide a lightweight homeassistant stub when the full package is unavailable.
 # In CI the real package is installed; this fallback enables local development
 # without the heavy HA dependency tree.
@@ -59,6 +64,7 @@ except ImportError:
 
     _ha.config_entries.ConfigFlow = _StubConfigFlow
     _ha.config_entries.OptionsFlow = _StubOptionsFlow
+    _ha.components.sensor.SensorEntity = _StubSensorEntity
 
     _ha_modules = {
         "homeassistant": _ha,
@@ -71,6 +77,7 @@ except ImportError:
         "homeassistant.helpers.typing": _ha.helpers.typing,
         "homeassistant.helpers.entity": _ha.helpers.entity,
         "homeassistant.helpers.entity_platform": _ha.helpers.entity_platform,
+        "homeassistant.helpers.entity_registry": _ha.helpers.entity_registry,
         "homeassistant.helpers.device_registry": _ha.helpers.device_registry,
         "homeassistant.components": _ha.components,
         "homeassistant.components.sensor": _ha.components.sensor,

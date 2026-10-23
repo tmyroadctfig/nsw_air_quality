@@ -1,0 +1,17 @@
+{
+  "entity": {
+    "sensor": {
+      "air_quality_category": {
+        "name": "Air quality",
+        "state": {
+          "good": "Good",
+          "fair": "Fair",
+          "poor": "Poor",
+          "very_poor": "Very poor",
+          "extremely_poor": "Extremely poor",
+          "hazardous": "Hazardous"
+        }
+      }
+    }
+  }
+}

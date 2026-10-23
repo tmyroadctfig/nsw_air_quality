@@ -56,21 +56,29 @@ class AirQualityController:
                 async with session.get(url) as response:
                     if response.status == 200:
                         data = await response.json()
-                        self._site_data = data  # Update sensor state
+                        self._site_data = data
                     else:
-                        _LOGGER.error("Error fetching site list: %s", response.status)
-                        self._site_data = f"Error {response.status}"
+                        _LOGGER.error("Error fetching site readings: %s", response.status)
+                        self._site_data = None
             except aiohttp.ClientError as e:
-                self._site_data = f"Request failed: {str(e)}"
+                _LOGGER.error("Request for site readings failed: %s", e)
+                self._site_data = None
+
+    def site_entries(self, site_id):
+        """Return all rows in the latest API response for the site, or None if there is no data yet."""
+        if not self._site_data:
+            return None
+
+        return [entry for entry in self._site_data if entry.get("Site_Id") == site_id]
 
     def site_reading(self, site_id, sensor_type: SensorType):
-        if not self._site_data:
+        site_data = self.site_entries(site_id)
+        if site_data is None:
             return None
 
         parameter_code = sensor_type.name
         if sensor_type == SensorType.PM25:
             parameter_code = "PM2.5"
 
-        site_data = [entry for entry in self._site_data if entry.get("Site_Id") == site_id]
         sensor_data = [entry for entry in site_data if (entry.get("Parameter") or {}).get("ParameterCode") == parameter_code]
         return sensor_data
